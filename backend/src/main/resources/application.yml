@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: records
+  config:
+    # Reads the repository-root .env when started from backend/
+    import: optional:file:../.env[.properties]
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/records}
+    username: ${DB_USERNAME:records}
+    password: ${DB_PASSWORD:records}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    ttl: 60m
+  cors:
+    allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:3000}
