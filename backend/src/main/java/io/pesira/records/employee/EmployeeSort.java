@@ -9,7 +9,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 final class EmployeeSort {
 
-    static final String DEFAULT = "lastName,asc";
+    private static final String DEFAULT = "lastName,asc";
 
     // API field -> entity property. Only these can be sorted on.
     private static final Map<String, String> FIELDS = Map.of(
@@ -25,8 +25,12 @@ final class EmployeeSort {
     private EmployeeSort() {
     }
 
-    // Parses "field,asc|desc". The id tie-breaker keeps paging stable when values repeat.
+    // Parses "field,asc|desc" (null means the default). The id tie-breaker keeps paging stable
+    // when values repeat.
     static Sort parse(String value) {
+        if (value == null) {
+            value = DEFAULT;
+        }
         String[] parts = value.split(",", -1);
         String property = FIELDS.get(parts[0].trim());
         if (property == null || parts.length != 2) {

@@ -35,7 +35,7 @@ public class EmployeeController {
     public PageResponse<EmployeeResponse> list(@RequestParam(required = false) String search,
                                                @RequestParam(required = false) String department,
                                                @RequestParam(required = false) EmployeeStatus status,
-                                               @RequestParam(defaultValue = EmployeeSort.DEFAULT) String sort,
+                                               @RequestParam(required = false) String sort,
                                                @RequestParam(defaultValue = "0") @Min(0) int page,
                                                @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         return service.list(search, department, status, sort, page, size);
