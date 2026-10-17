@@ -4,7 +4,7 @@ A Spring Boot and PostgreSQL API, with JWT authentication, for managing employee
 
 ## Prerequisites
 
-- JDK 21 or newer
+- JDK 25 or newer
 - Docker Desktop
 - Git
 
