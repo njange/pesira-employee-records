@@ -4,6 +4,9 @@ import java.util.Locale;
 
 import io.pesira.records.common.ConflictException;
 import io.pesira.records.common.NotFoundException;
+import io.pesira.records.common.PageResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +22,14 @@ public class EmployeeService {
 
     public EmployeeService(EmployeeRepository employees) {
         this.employees = employees;
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<EmployeeResponse> list(String search, String department, EmployeeStatus status,
+                                               String sort, int page, int size) {
+        Page<Employee> result = employees.findAll(EmployeeSpecifications.filter(search, department, status),
+                PageRequest.of(page, size, EmployeeSort.parse(sort)));
+        return PageResponse.from(result.map(EmployeeResponse::from));
     }
 
     @Transactional(readOnly = true)
