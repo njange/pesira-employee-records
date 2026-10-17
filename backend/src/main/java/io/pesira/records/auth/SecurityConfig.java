@@ -8,6 +8,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import io.pesira.records.common.ProblemDetailsSecurityHandler;
 import io.pesira.records.user.AppUserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +18,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
@@ -37,13 +39,15 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
     // HS256 needs a key of at least 256 bits.
     private static final int MIN_SECRET_BYTES = 32;
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http, ProblemDetailsSecurityHandler problems)
+            throws Exception {
         http
                 // Stateless API: the token travels in the Authorization header, not a cookie.
                 .csrf(csrf -> csrf.disable())
@@ -54,8 +58,13 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated())
                 .cors(Customizer.withDefaults())
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt
-                        .jwtAuthenticationConverter(jwtAuthenticationConverter())));
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(problems)
+                        .accessDeniedHandler(problems))
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .authenticationEntryPoint(problems)
+                        .accessDeniedHandler(problems)
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
         return http.build();
     }
 
