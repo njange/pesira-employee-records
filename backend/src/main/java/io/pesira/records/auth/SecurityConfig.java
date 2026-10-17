@@ -54,6 +54,11 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        // EmployeeController repeats these checks with @PreAuthorize on purpose,
+                        // so removing either one alone never opens the endpoints.
+                        .requestMatchers(HttpMethod.POST, "/api/employees/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/employees/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/employees/**").hasRole("ADMIN")
                         // Lets Spring Boot render error responses (e.g. 400) for anonymous callers.
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated())
