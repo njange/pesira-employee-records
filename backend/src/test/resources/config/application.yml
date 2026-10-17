@@ -1,0 +1,5 @@
+# Loaded on top of src/main/resources/application.yml, so only test overrides go here.
+# (A test-side application.yml would hide the main one instead of extending it.)
+app:
+  jwt:
+    secret: test-only-jwt-secret-never-use-outside-tests
