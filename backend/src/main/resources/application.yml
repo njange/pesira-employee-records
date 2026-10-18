@@ -21,4 +21,5 @@ app:
     secret: ${JWT_SECRET}
     ttl: 60m
   cors:
-    allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:3000}
+    # Comma-separated; each entry may use * as a wildcard.
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}

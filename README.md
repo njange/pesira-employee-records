@@ -87,9 +87,9 @@ The browser only talks to the frontend. Next.js forwards every `/api/...` reques
 it starts.
 
 Open the app at `http://localhost:3000`, not `http://127.0.0.1:3000`. The proxy passes the browser's
-origin through, and the backend rejects requests from any origin other than `CORS_ALLOWED_ORIGIN`
-in `.env`, including the login request. To serve the frontend from another address, set
-`CORS_ALLOWED_ORIGIN` to it and restart the backend.
+origin through, and the backend rejects requests from any origin not listed in `CORS_ALLOWED_ORIGINS`
+in `.env`, including the login request. To serve the frontend from another address, add it to
+`CORS_ALLOWED_ORIGINS` (comma-separated, `*` matches any text) and restart the backend.
 
 Before committing frontend changes, run `npm run lint` and `npm run build` in `frontend/`.
 
