@@ -1,10 +1,12 @@
 # Pesira Employee Records
 
-A Spring Boot and PostgreSQL API, with JWT authentication, for managing employee records.
+A Spring Boot and PostgreSQL API, with JWT authentication, and a Next.js frontend for managing
+employee records.
 
 ## Prerequisites
 
 - JDK 21 or newer
+- Node.js 20.9 or newer (for the frontend)
 - Docker Desktop
 - Git
 
@@ -31,6 +33,10 @@ free port and use the same port in `DB_URL`.
 
 ## Run
 
+Start things in this order: the database, the backend, then the frontend.
+
+### Database and backend
+
 Start PostgreSQL, then the backend from the `backend/` folder (it reads `../.env`):
 
 ```bash
@@ -45,6 +51,32 @@ The API listens on `http://localhost:8080`. On first start, Flyway creates the s
 demo users and 60 sample employees.
 
 To stop PostgreSQL, run `docker compose down`. Add `-v` to also delete the data.
+
+### Frontend
+
+In a second terminal, from the repository root:
+
+```bash
+cd frontend
+npm install
+cp .env.example .env.local
+npm run dev
+```
+
+Open <http://localhost:3000> and log in with one of the [demo logins](#demo-logins). Every logged-in
+user can search, filter, sort, page through and export employees; only admins can add, edit and
+delete them.
+
+The browser only talks to the frontend. Next.js forwards every `/api/...` request to the backend at
+`API_URL` (set in `.env.local`, default `http://localhost:8080`). The dev server reads `API_URL` when
+it starts.
+
+Open the app at `http://localhost:3000`, not `http://127.0.0.1:3000`. The proxy passes the browser's
+origin through, and the backend rejects requests from any origin other than `CORS_ALLOWED_ORIGIN`
+in `.env`, including the login request. To serve the frontend from another address, set
+`CORS_ALLOWED_ORIGIN` to it and restart the backend.
+
+Before committing frontend changes, run `npm run lint` and `npm run build` in `frontend/`.
 
 ## Demo logins
 
