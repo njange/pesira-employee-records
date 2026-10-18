@@ -1,4 +1,4 @@
-import type { EmployeeStatus } from "./types";
+import type { EmployeeStatus, ExportFormat } from "./types";
 
 const LOCALE = "en-GB";
 
@@ -36,6 +36,10 @@ export function toIsoDate(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${date.getFullYear()}-${month}-${day}`;
+}
+
+export function exportFileName(format: ExportFormat, date: Date): string {
+  return `employees-${toIsoDate(date)}.${format}`;
 }
 
 export function formatRange(page: number, size: number, total: number): string {

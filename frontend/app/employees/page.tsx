@@ -7,6 +7,7 @@ import Button from "@/components/Button";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import EmployeeForm from "@/components/EmployeeForm";
 import EmployeeTable from "@/components/EmployeeTable";
+import ExportButtons from "@/components/ExportButtons";
 import Pagination from "@/components/Pagination";
 import SearchBox from "@/components/SearchBox";
 import SelectField from "@/components/SelectField";
@@ -16,6 +17,7 @@ import {
   changeTableState,
   nextSort,
   parseTableState,
+  toApiFilters,
   toApiParams,
   toUrlSearch,
   type TableState,
@@ -159,6 +161,7 @@ function EmployeesView({ session }: { session: Session }) {
               ))}
             </SelectField>
           </div>
+          <ExportButtons filters={toApiFilters(table)} />
         </div>
 
         {error ? (
