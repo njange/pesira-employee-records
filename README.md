@@ -5,7 +5,7 @@ employee records.
 
 ## Prerequisites
 
-- JDK 21 or newer
+- JDK 25 or newer
 - Node.js 20.9 or newer (for the frontend)
 - Docker Desktop
 - Git
