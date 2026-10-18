@@ -1,6 +1,8 @@
 # Production stack for the VPS: PostgreSQL and the backend. The backend listens on localhost only;
 # the host's nginx (deploy/nginx-site.conf) serves it over HTTPS. Run from this folder:
 # docker compose up -d --build
+name: pesira
+
 services:
   postgres:
     image: postgres:16
