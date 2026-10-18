@@ -4,12 +4,13 @@ import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
 import Button from "@/components/Button";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import EmployeeForm from "@/components/EmployeeForm";
 import EmployeeTable from "@/components/EmployeeTable";
 import Pagination from "@/components/Pagination";
 import SearchBox from "@/components/SearchBox";
 import SelectField from "@/components/SelectField";
-import { errorMessage, listEmployees } from "@/lib/api";
+import { deleteEmployee, errorMessage, listEmployees } from "@/lib/api";
 import { STATUS_LABELS } from "@/lib/format";
 import {
   changeTableState,
@@ -60,6 +61,7 @@ function EmployeesView({ session }: { session: Session }) {
   const [data, setData] = useState<(RequestKey & { page: PageResponse<Employee> }) | null>(null);
   const [failure, setFailure] = useState<(RequestKey & { message: string }) | null>(null);
   const [formTarget, setFormTarget] = useState<FormTarget | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Employee | null>(null);
   const [statusMessage, setStatusMessage] = useState("");
   const isAdmin = session.user.role === "ADMIN";
 
@@ -109,6 +111,13 @@ function EmployeesView({ session }: { session: Session }) {
   function handleSaved(saved: Employee) {
     const action = formTarget?.employee ? "Saved" : "Added";
     setStatusMessage(`${action} ${saved.firstName} ${saved.lastName}.`);
+    setReloads((count) => count + 1);
+  }
+
+  // If this empties the last page, the past-last-page effect above moves back a page.
+  async function handleDelete(employee: Employee) {
+    await deleteEmployee(employee.id);
+    setStatusMessage(`Deleted ${employee.firstName} ${employee.lastName}.`);
     setReloads((count) => count + 1);
   }
 
@@ -176,7 +185,11 @@ function EmployeesView({ session }: { session: Session }) {
               loading={loading}
               sort={table.sort}
               onSort={(field) => navigate(changeTableState(table, { sort: nextSort(table.sort, field) }))}
-              onEdit={isAdmin ? (employee) => setFormTarget({ employee }) : undefined}
+              actions={
+                isAdmin
+                  ? { onEdit: (employee) => setFormTarget({ employee }), onDelete: setDeleteTarget }
+                  : undefined
+              }
             />
             {page && (
               <Pagination
@@ -193,6 +206,15 @@ function EmployeesView({ session }: { session: Session }) {
       </main>
       {formTarget && (
         <EmployeeForm employee={formTarget.employee} onSaved={handleSaved} onClose={() => setFormTarget(null)} />
+      )}
+      {deleteTarget && (
+        <ConfirmDialog
+          title="Delete employee"
+          message={`Delete ${deleteTarget.firstName} ${deleteTarget.lastName}? This can't be undone.`}
+          confirmLabel="Delete"
+          onConfirm={() => handleDelete(deleteTarget)}
+          onClose={() => setDeleteTarget(null)}
+        />
       )}
     </>
   );

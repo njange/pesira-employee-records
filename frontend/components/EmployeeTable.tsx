@@ -52,8 +52,11 @@ interface EmployeeTableProps {
   loading: boolean;
   sort: Sort;
   onSort: (field: SortField) => void;
-  // Only passed for admins; without it the Actions column is hidden.
-  onEdit?: (employee: Employee) => void;
+  // Only passed for admins; without them the Actions column is hidden.
+  actions?: {
+    onEdit: (employee: Employee) => void;
+    onDelete: (employee: Employee) => void;
+  };
 }
 
 export default function EmployeeTable({
@@ -62,9 +65,9 @@ export default function EmployeeTable({
   loading,
   sort,
   onSort,
-  onEdit,
+  actions,
 }: EmployeeTableProps) {
-  const columnCount = COLUMNS.length + (onEdit ? 1 : 0);
+  const columnCount = COLUMNS.length + (actions ? 1 : 0);
   return (
     <div className={styles.scroller} role="region" aria-label="Employees table" tabIndex={0}>
       <table className={loading ? `${styles.table} ${styles.loading}` : styles.table} aria-busy={loading}>
@@ -73,7 +76,7 @@ export default function EmployeeTable({
             {COLUMNS.map((column) => (
               <SortableHeader key={column.field} column={column} sort={sort} onSort={onSort} />
             ))}
-            {onEdit && (
+            {actions && (
               <th scope="col" className={styles.actionsHeader}>
                 Actions
               </th>
@@ -104,16 +107,27 @@ export default function EmployeeTable({
                       {STATUS_LABELS[employee.status]}
                     </span>
                   </td>
-                  {onEdit && (
+                  {actions && (
                     <td>
-                      <Button
-                        type="button"
-                        size="small"
-                        aria-label={`Edit ${employee.firstName} ${employee.lastName}`}
-                        onClick={() => onEdit(employee)}
-                      >
-                        Edit
-                      </Button>
+                      <div className={styles.actions}>
+                        <Button
+                          type="button"
+                          size="small"
+                          aria-label={`Edit ${employee.firstName} ${employee.lastName}`}
+                          onClick={() => actions.onEdit(employee)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          type="button"
+                          size="small"
+                          variant="danger"
+                          aria-label={`Delete ${employee.firstName} ${employee.lastName}`}
+                          onClick={() => actions.onDelete(employee)}
+                        >
+                          Delete
+                        </Button>
+                      </div>
                     </td>
                   )}
                 </tr>
