@@ -87,9 +87,9 @@ The browser only talks to the frontend. Next.js forwards every `/api/...` reques
 it starts.
 
 Open the app at `http://localhost:3000`, not `http://127.0.0.1:3000`. The proxy passes the browser's
-origin through, and the backend rejects requests from any origin other than `CORS_ALLOWED_ORIGIN`
-in `.env`, including the login request. To serve the frontend from another address, set
-`CORS_ALLOWED_ORIGIN` to it and restart the backend.
+origin through, and the backend rejects requests from any origin not listed in `CORS_ALLOWED_ORIGINS`
+in `.env`, including the login request. To serve the frontend from another address, add it to
+`CORS_ALLOWED_ORIGINS` (comma-separated, `*` matches any text) and restart the backend.
 
 Before committing frontend changes, run `npm run lint` and `npm run build` in `frontend/`.
 
@@ -241,3 +241,45 @@ cd backend
 ```
 
 On Windows without bash, run `mvnw.cmd test`.
+
+## Deploy
+
+The frontend runs on Vercel and the backend on a VPS. Vercel forwards `/api/...` to the backend,
+so the browser only ever talks to Vercel.
+
+### Backend on a VPS
+
+The VPS needs Docker, nginx, certbot, ports 80 and 443 open, and a domain (say `api.example.com`)
+whose DNS A record points at it. `deploy/compose.yml` runs PostgreSQL and the backend; the backend
+listens on `127.0.0.1:5200` only, and the host's nginx serves it over HTTPS.
+
+```bash
+git clone https://github.com/njange/pesira-employee-records.git
+cd pesira-employee-records/deploy
+cp .env.example .env
+```
+
+In `deploy/.env`, set a new `DB_PASSWORD` and `JWT_SECRET` (each from `openssl rand -base64 48`)
+and `CORS_ALLOWED_ORIGINS` (the Vercel URL and a pattern for its previews). Then start it:
+
+```bash
+docker compose up -d --build
+```
+
+Add the nginx site from `deploy/nginx-site.conf` (its comment lists the steps), then get the
+certificate with `certbot --nginx -d api.example.com`.
+
+Check it with `curl https://api.example.com/api/auth/me`, which should return a 401 Problem
+Details body. To update later: `git pull`, then `docker compose up -d --build` again.
+
+### Frontend on Vercel
+
+Import the GitHub repository in Vercel with these settings:
+
+| Setting              | Value                                                   |
+|----------------------|---------------------------------------------------------|
+| Root Directory       | `frontend`                                              |
+| Framework Preset     | Next.js                                                 |
+| Environment variable | `API_URL` = `https://api.example.com` (your API domain) |
+
+Next.js reads `API_URL` when it builds, so redeploy after changing it.
