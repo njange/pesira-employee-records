@@ -48,6 +48,10 @@
   text-align: inherit;
 }
 
+.table th.actionsHeader {
+  padding: var(--space-2) var(--space-3);
+}
+
 .table th.numeric .sortButton {
   justify-content: flex-end;
 }

@@ -31,6 +31,13 @@ export function formatDate(isoDate: string): string {
   return dateFormat.format(new Date(`${isoDate}T00:00:00Z`));
 }
 
+// The local calendar date as yyyy-mm-dd, the format the API and <input type="date"> use.
+export function toIsoDate(date: Date): string {
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
 export function formatRange(page: number, size: number, total: number): string {
   if (total === 0) return "No results";
   const first = (page - 1) * size + 1;

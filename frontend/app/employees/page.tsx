@@ -4,6 +4,7 @@ import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
 import Button from "@/components/Button";
+import EmployeeForm from "@/components/EmployeeForm";
 import EmployeeTable from "@/components/EmployeeTable";
 import Pagination from "@/components/Pagination";
 import SearchBox from "@/components/SearchBox";
@@ -22,10 +23,17 @@ import { EMPLOYEE_STATUSES, type Employee, type PageResponse, type Session } fro
 import { useSession } from "@/lib/useSession";
 import styles from "./employees.module.css";
 
+const STATUS_MESSAGE_MS = 5000;
+
 // Results remember which request they answer, so a stale one is never shown as current.
 interface RequestKey {
   table: TableState;
   reloads: number;
+}
+
+// The open form: `employee` is null when adding.
+interface FormTarget {
+  employee: Employee | null;
 }
 
 export default function EmployeesPage() {
@@ -51,6 +59,9 @@ function EmployeesView({ session }: { session: Session }) {
   const [reloads, setReloads] = useState(0);
   const [data, setData] = useState<(RequestKey & { page: PageResponse<Employee> }) | null>(null);
   const [failure, setFailure] = useState<(RequestKey & { message: string }) | null>(null);
+  const [formTarget, setFormTarget] = useState<FormTarget | null>(null);
+  const [statusMessage, setStatusMessage] = useState("");
+  const isAdmin = session.user.role === "ADMIN";
 
   useEffect(() => {
     const controller = new AbortController();
@@ -89,11 +100,33 @@ function EmployeesView({ session }: { session: Session }) {
     if (pastLastPage) navigate({ ...table, page: lastPage }, "replace");
   }, [pastLastPage, lastPage, table, navigate]);
 
+  useEffect(() => {
+    if (!statusMessage) return;
+    const timer = setTimeout(() => setStatusMessage(""), STATUS_MESSAGE_MS);
+    return () => clearTimeout(timer);
+  }, [statusMessage]);
+
+  function handleSaved(saved: Employee) {
+    const action = formTarget?.employee ? "Saved" : "Added";
+    setStatusMessage(`${action} ${saved.firstName} ${saved.lastName}.`);
+    setReloads((count) => count + 1);
+  }
+
   return (
     <>
       <AppHeader user={session.user} />
       <main className={styles.main}>
-        <h1>Employees</h1>
+        <div className={styles.titleRow}>
+          <h1>Employees</h1>
+          {isAdmin && (
+            <Button type="button" variant="primary" onClick={() => setFormTarget({ employee: null })}>
+              Add employee
+            </Button>
+          )}
+        </div>
+        <p className={styles.statusMessage} role="status">
+          {statusMessage}
+        </p>
 
         <div className={styles.toolbar}>
           <div className={styles.search}>
@@ -143,6 +176,7 @@ function EmployeesView({ session }: { session: Session }) {
               loading={loading}
               sort={table.sort}
               onSort={(field) => navigate(changeTableState(table, { sort: nextSort(table.sort, field) }))}
+              onEdit={isAdmin ? (employee) => setFormTarget({ employee }) : undefined}
             />
             {page && (
               <Pagination
@@ -157,6 +191,9 @@ function EmployeesView({ session }: { session: Session }) {
           </>
         )}
       </main>
+      {formTarget && (
+        <EmployeeForm employee={formTarget.employee} onSaved={handleSaved} onClose={() => setFormTarget(null)} />
+      )}
     </>
   );
 }

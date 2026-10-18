@@ -1,6 +1,7 @@
 import { STATUS_LABELS, formatDate, formatMoney } from "@/lib/format";
 import type { Sort } from "@/lib/query";
 import type { Employee, SortField } from "@/lib/types";
+import Button from "./Button";
 import styles from "./EmployeeTable.module.css";
 
 interface Column {
@@ -51,9 +52,19 @@ interface EmployeeTableProps {
   loading: boolean;
   sort: Sort;
   onSort: (field: SortField) => void;
+  // Only passed for admins; without it the Actions column is hidden.
+  onEdit?: (employee: Employee) => void;
 }
 
-export default function EmployeeTable({ employees, placeholderRows, loading, sort, onSort }: EmployeeTableProps) {
+export default function EmployeeTable({
+  employees,
+  placeholderRows,
+  loading,
+  sort,
+  onSort,
+  onEdit,
+}: EmployeeTableProps) {
+  const columnCount = COLUMNS.length + (onEdit ? 1 : 0);
   return (
     <div className={styles.scroller} role="region" aria-label="Employees table" tabIndex={0}>
       <table className={loading ? `${styles.table} ${styles.loading}` : styles.table} aria-busy={loading}>
@@ -62,13 +73,18 @@ export default function EmployeeTable({ employees, placeholderRows, loading, sor
             {COLUMNS.map((column) => (
               <SortableHeader key={column.field} column={column} sort={sort} onSort={onSort} />
             ))}
+            {onEdit && (
+              <th scope="col" className={styles.actionsHeader}>
+                Actions
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
           {employees === null
             ? Array.from({ length: placeholderRows }, (_, index) => (
                 <tr key={index}>
-                  <td colSpan={COLUMNS.length}>
+                  <td colSpan={columnCount}>
                     <span className={styles.skeleton} />
                   </td>
                 </tr>
@@ -88,6 +104,18 @@ export default function EmployeeTable({ employees, placeholderRows, loading, sor
                       {STATUS_LABELS[employee.status]}
                     </span>
                   </td>
+                  {onEdit && (
+                    <td>
+                      <Button
+                        type="button"
+                        size="small"
+                        aria-label={`Edit ${employee.firstName} ${employee.lastName}`}
+                        onClick={() => onEdit(employee)}
+                      >
+                        Edit
+                      </Button>
+                    </td>
+                  )}
                 </tr>
               ))}
         </tbody>

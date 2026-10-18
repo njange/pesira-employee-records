@@ -7,6 +7,34 @@
   padding: var(--space-5) var(--space-4);
 }
 
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+/* Always rendered so screen readers announce new text; an empty one takes no space. */
+.statusMessage {
+  position: fixed;
+  bottom: var(--space-4);
+  left: 50%;
+  z-index: 1;
+  max-width: calc(100vw - 2 * var(--space-4));
+  transform: translateX(-50%);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  box-shadow: var(--shadow);
+}
+
+.statusMessage:empty {
+  padding: 0;
+  box-shadow: none;
+}
+
 .toolbar {
   display: flex;
   flex-wrap: wrap;
