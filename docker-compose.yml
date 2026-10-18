@@ -15,5 +15,27 @@ services:
       timeout: 5s
       retries: 10
 
+  backend:
+    build: ./backend
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-records}
+      DB_USERNAME: ${DB_USERNAME:-records}
+      DB_PASSWORD: ${DB_PASSWORD:-records}
+      JWT_SECRET: ${JWT_SECRET}
+      # The frontend proxy passes the browser's origin through, so it must match the published port.
+      CORS_ALLOWED_ORIGIN: http://localhost:${FRONTEND_PORT:-3000}
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      - backend
+
 volumes:
   postgres-data:
