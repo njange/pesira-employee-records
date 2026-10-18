@@ -1,10 +1,12 @@
 # Pesira Employee Records
 
-A Spring Boot and PostgreSQL API, with JWT authentication, for managing employee records.
+A Spring Boot and PostgreSQL API, with JWT authentication, and a Next.js frontend for managing
+employee records.
 
 ## Prerequisites
 
-- JDK 25 or newer
+- JDK 21 or newer
+- Node.js 20.9 or newer (for the frontend)
 - Docker Desktop
 - Git
 
@@ -29,12 +31,31 @@ Commands below are for a bash shell (Git Bash on Windows).
 If port 5432 is already taken (for example by a local PostgreSQL), set `DB_PORT` in `.env` to a
 free port and use the same port in `DB_URL`.
 
-## Run
+## Run with Docker
 
-Start PostgreSQL, then the backend from the `backend/` folder (it reads `../.env`):
+To run the database, backend and frontend together in containers:
 
 ```bash
-docker compose up -d
+docker compose up -d --build
+```
+
+Open <http://localhost:3000> and log in with one of the [demo logins](#demo-logins). The first build
+downloads the Maven and npm dependencies, so it takes a few minutes. The backend is also published
+on `http://localhost:8080`, so the curl examples below work unchanged. If port 8080 or 3000 is
+taken, set `BACKEND_PORT` or `FRONTEND_PORT` in `.env`.
+
+To stop everything, run `docker compose down`. Add `-v` to also delete the data.
+
+## Run for development
+
+Start things in this order: the database, the backend, then the frontend.
+
+### Database and backend
+
+Start only PostgreSQL in Docker, then the backend from the `backend/` folder (it reads `../.env`):
+
+```bash
+docker compose up -d postgres
 cd backend
 ./mvnw spring-boot:run
 ```
@@ -45,6 +66,32 @@ The API listens on `http://localhost:8080`. On first start, Flyway creates the s
 demo users and 60 sample employees.
 
 To stop PostgreSQL, run `docker compose down`. Add `-v` to also delete the data.
+
+### Frontend
+
+In a second terminal, from the repository root:
+
+```bash
+cd frontend
+npm install
+cp .env.example .env.local
+npm run dev
+```
+
+Open <http://localhost:3000> and log in with one of the [demo logins](#demo-logins). Every logged-in
+user can search, filter, sort, page through and export employees; only admins can add, edit and
+delete them.
+
+The browser only talks to the frontend. Next.js forwards every `/api/...` request to the backend at
+`API_URL` (set in `.env.local`, default `http://localhost:8080`). The dev server reads `API_URL` when
+it starts.
+
+Open the app at `http://localhost:3000`, not `http://127.0.0.1:3000`. The proxy passes the browser's
+origin through, and the backend rejects requests from any origin other than `CORS_ALLOWED_ORIGIN`
+in `.env`, including the login request. To serve the frontend from another address, set
+`CORS_ALLOWED_ORIGIN` to it and restart the backend.
+
+Before committing frontend changes, run `npm run lint` and `npm run build` in `frontend/`.
 
 ## Demo logins
 
