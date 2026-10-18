@@ -31,16 +31,31 @@ Commands below are for a bash shell (Git Bash on Windows).
 If port 5432 is already taken (for example by a local PostgreSQL), set `DB_PORT` in `.env` to a
 free port and use the same port in `DB_URL`.
 
-## Run
+## Run with Docker
+
+To run the database, backend and frontend together in containers:
+
+```bash
+docker compose up -d --build
+```
+
+Open <http://localhost:3000> and log in with one of the [demo logins](#demo-logins). The first build
+downloads the Maven and npm dependencies, so it takes a few minutes. The backend is also published
+on `http://localhost:8080`, so the curl examples below work unchanged. If port 8080 or 3000 is
+taken, set `BACKEND_PORT` or `FRONTEND_PORT` in `.env`.
+
+To stop everything, run `docker compose down`. Add `-v` to also delete the data.
+
+## Run for development
 
 Start things in this order: the database, the backend, then the frontend.
 
 ### Database and backend
 
-Start PostgreSQL, then the backend from the `backend/` folder (it reads `../.env`):
+Start only PostgreSQL in Docker, then the backend from the `backend/` folder (it reads `../.env`):
 
 ```bash
-docker compose up -d
+docker compose up -d postgres
 cd backend
 ./mvnw spring-boot:run
 ```
