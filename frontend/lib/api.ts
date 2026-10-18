@@ -12,6 +12,7 @@ import type {
 } from "./types";
 
 const LOGIN_PATH = "/auth/login";
+const GENERIC_ERROR = "Something went wrong. Please try again.";
 
 export class ApiError extends Error {
   readonly status: number;
@@ -37,9 +38,13 @@ async function toApiError(response: Response): Promise<ApiError> {
   return new ApiError(
     response.status,
     problem?.title ?? response.statusText,
-    problem?.detail ?? "Something went wrong. Please try again.",
+    problem?.detail ?? GENERIC_ERROR,
     problem?.fieldErrors,
   );
+}
+
+export function errorMessage(error: unknown): string {
+  return error instanceof ApiError ? error.detail : GENERIC_ERROR;
 }
 
 async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
