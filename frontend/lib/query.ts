@@ -65,7 +65,8 @@ export function toUrlSearch(state: TableState): string {
   if (state.sort.field !== DEFAULT_SORT.field || state.sort.direction !== DEFAULT_SORT.direction) {
     params.set("sort", `${state.sort.field},${state.sort.direction}`);
   }
-  const query = params.toString();
+  // Commas are valid in a query string; leaving them unescaped keeps `sort=salary,desc` readable.
+  const query = params.toString().replaceAll("%2C", ",");
   return query ? `?${query}` : "";
 }
 
